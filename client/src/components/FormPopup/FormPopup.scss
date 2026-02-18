@@ -1,0 +1,364 @@
+@use "../../assets/styles/variables" as *;
+
+.form-popup {
+  &__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: $popup-overlay;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: $z-index-modal;
+    animation: fadeIn 0.3s ease;
+    padding: $spacing-sm;
+    
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-xs;
+      align-items: flex-end;
+    }
+    
+    @media (max-height: 500px) {
+      align-items: flex-start;
+      padding-top: $spacing-md;
+    }
+  }
+
+  &__content {
+    background: $popup-bg;
+    border-radius: $border-radius-lg;
+    box-shadow: $popup-shadow;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: scaleIn 0.3s ease;
+    
+    @media (max-width: $breakpoint-sm) {
+      max-width: 100%;
+      max-height: 95vh;
+      border-radius: $border-radius-lg $border-radius-lg 0 0;
+      animation: slideUp 0.3s ease;
+      margin-bottom: env(safe-area-inset-bottom, 0);
+    }
+    
+    @media (max-height: 500px) {
+      max-height: 95vh;
+    }
+    
+    @media (max-width: 360px) {
+      border-radius: $border-radius-lg $border-radius-lg 0 0;
+    }
+  }
+
+  &__header {
+    padding: $spacing-lg;
+    border-bottom: 1px solid $popup-border;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: $popup-bg;
+    z-index: 1;
+    
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-md;
+    }
+    
+    @media (max-width: 360px) {
+      padding: $spacing-sm $spacing-md;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    
+    @media (max-width: $breakpoint-sm) {
+      font-size: $font-size-lg;
+    }
+    
+    @media (max-width: 360px) {
+      font-size: 16px;
+    }
+  }
+
+  &__body {
+    padding: $spacing-lg;
+    
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-md;
+    }
+    
+    @media (max-width: 360px) {
+      padding: $spacing-sm;
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    
+    @media (max-width: $breakpoint-sm) {
+      gap: $spacing-sm;
+    }
+  }
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $text-primary;
+    
+    @media (max-width: $breakpoint-sm) {
+      font-size: $font-size-xs;
+    }
+  }
+
+  &__input,
+  &__select {
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $form-border;
+    border-radius: $border-radius;
+    font-size: $font-size-base;
+    font-family: $font-family-base;
+    transition: all $transition-fast;
+    background: $form-bg;
+    color: $text-primary;
+    width: 100%;
+    
+    @media (max-width: $breakpoint-sm) {
+      font-size: 16px; 
+      padding: $spacing-md;
+      min-height: 44px; 
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: $form-focus-border;
+      box-shadow: 0 0 0 3px rgba($form-focus-border, 0.1);
+    }
+    
+    &:disabled {
+      background: $form-disabled-bg;
+      color: $form-disabled-color;
+      cursor: not-allowed;
+    }
+  }
+
+  &__counter {
+    display: block;
+    text-align: right;
+    font-size: $font-size-xs;
+    margin-top: $spacing-xs;
+    color: $text-light;
+    
+    &_warning {
+      color: $warning-color;
+    }
+    
+    &_error {
+      color: $error-color;
+      font-weight: bold;
+    }
+  }
+
+  &__footer {
+    padding: $spacing-lg;
+    border-top: 1px solid $popup-border;
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+    position: sticky;
+    bottom: 0;
+    background: $popup-bg;
+    
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-md;
+      flex-direction: column-reverse;
+      gap: $spacing-xs;
+      padding-bottom: calc($spacing-md + env(safe-area-inset-bottom, 0));
+    }
+    
+    @media (max-width: 360px) {
+      padding: $spacing-sm;
+      padding-bottom: calc($spacing-sm + env(safe-area-inset-bottom, 0));
+    }
+  }
+
+  &__button {
+    padding: $spacing-sm $spacing-lg;
+    border: none;
+    border-radius: $border-radius;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: all $transition-fast;
+    min-height: 44px; 
+    
+    @media (max-width: $breakpoint-sm) {
+      width: 100%;
+      font-size: 16px;
+      padding: $spacing-md;
+    }
+    
+    &--submit {
+      background: $btn-primary-bg;
+      color: $text-inverse;
+      
+      &:hover:not(:disabled) {
+        background: $btn-primary-hover;
+        transform: translateY(-1px);
+      }
+      
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+    
+    &--cancel {
+      background: $btn-secondary-bg;
+      color: $text-secondary;
+      
+      &:hover {
+        background: $btn-secondary-hover;
+      }
+    }
+  }
+
+  &__error {
+    color: $error-color;
+    font-size: $font-size-sm;
+    margin-top: $spacing-xs;
+    
+    @media (max-width: $breakpoint-sm) {
+      font-size: $font-size-xs;
+    }
+  }
+
+  &__success {
+    color: $success-color;
+    font-size: $font-size-sm;
+    margin-top: $spacing-xs;
+    
+    @media (max-width: $breakpoint-sm) {
+      font-size: $font-size-xs;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .form-popup {
+    &__content {
+      width: 100%;
+    }
+  }
+}
+
+@media (min-width: $breakpoint-sm) and (max-width: $breakpoint-md) {
+  .form-popup {
+    &__content {
+      max-width: 90%;
+      width: 90%;
+    }
+    
+    &__header {
+      padding: $spacing-md $spacing-lg;
+    }
+    
+    &__body {
+      padding: $spacing-md;
+    }
+    
+    &__footer {
+      padding: $spacing-md $spacing-lg;
+    }
+  }
+}
+
+@media (min-width: $breakpoint-md) and (max-width: $breakpoint-lg) {
+  .form-popup {
+    &__content {
+      max-width: 600px;
+    }
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .form-popup {
+    &__content {
+      max-height: 85vh;
+      max-width: 90%;
+    }
+    
+    &__body {
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-popup {
+    &__content {
+      background: darken-color($popup-bg, 10%);
+    }
+  }
+}
+
+@supports (padding: max(0px)) {
+  .form-popup {
+    &__overlay {
+      padding-left: max($spacing-sm, env(safe-area-inset-left));
+      padding-right: max($spacing-sm, env(safe-area-inset-right));
+      padding-bottom: max($spacing-sm, env(safe-area-inset-bottom));
+    }
+  }
+}

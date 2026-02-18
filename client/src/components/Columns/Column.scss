@@ -1,0 +1,302 @@
+@use "../../assets/styles/variables" as *;
+
+.column-base {
+	padding-top: 10px;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+	color: #808080;
+  background: linear-gradient(180deg, rgba($bg-secondary, 0.5) 0%, rgba(white, 0.5) 100%);
+  
+  &__wrapper {
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba($text-secondary, 0.1);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba($primary-color, 0.3);
+      border-radius: 4px;
+      transition: background 0.3s;
+
+      &:hover {
+        background: rgba($primary-color, 0.7);
+      }
+    }
+  }
+
+	&__empty {
+		color: #adb5bd;
+		padding: 0 0 0 5px;
+	}
+
+  &__fallback {
+    text-align: center;
+    padding: 40px;
+    color: $text-secondary;
+    font-size: 16px;
+    animation: pulse 1.5s infinite;
+
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid $border-color;
+      border-top-color: $primary-color;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+  }
+}
+
+.central-column {
+  @extend .column-base;
+  border-right: 1px solid $border-color;
+  border-left: 1px solid $border-color;
+
+	&::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg,  #8b5cf6, #adb5bd);
+    opacity: 0.8;
+}
+  
+  &__wrapper {
+    @extend .column-base__wrapper;
+  }
+}
+
+.left-column {
+  @extend .column-base;
+  border-right: 1px solid $border-color;
+  
+  &__wrapper {
+    @extend .column-base__wrapper;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    opacity: 0.8;
+  }
+}
+
+.right-column {
+  @extend .column-base;
+  border-left: 1px solid $border-color;
+  
+  &__wrapper {
+    @extend .column-base__wrapper;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #adb5bd, #3b82f6);
+    opacity: 0.8;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    &__control-card {
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      
+      .button {
+        padding: 6px 8px;
+        font-size: 12px;
+        min-width: 50px;
+        
+        svg, .icon {
+          width: 14px;
+          height: 14px;
+        }
+      }
+    }
+  }
+  
+  .card__button-icon {
+    padding: 6px 8px;
+    font-size: 12px;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    &__control-card {
+      gap: 4px;
+      margin-top: 8px;
+      padding-top: 8px;
+      
+      .button {
+        padding: 5px 6px;
+        font-size: 11px;
+        min-width: 45px;
+        
+        svg, .icon {
+          width: 12px;
+          height: 12px;
+        }
+      }
+    }
+  }
+  
+  .card__button-icon {
+    padding: 5px 6px;
+    font-size: 11px;
+    
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+@media (max-width: 320px) {
+  .column-base {
+    &__wrapper {
+      padding: 8px;
+      gap: 6px;
+    }
+  }
+  
+  .card {
+    &__control-card {
+      gap: 4px;
+      
+      .button {
+        padding: 5px 6px;
+        font-size: 10px;
+        min-height: 30px;
+      }
+    }
+  }
+}
+
+.app__columns {
+  &.horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    
+    > * {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      width: 100%;
+      min-width: 100%;
+      transition: transform 0.3s ease;
+      
+      &:not(:first-child) {
+        border-left: 1px solid $border-color;
+      }
+    }
+    
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      
+      span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba($text-secondary, 0.3);
+        transition: all 0.3s ease;
+        
+        &.active {
+          background: $primary-color;
+          transform: scale(1.2);
+        }
+      }
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .column-base {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+    
+    &__wrapper {
+      &::-webkit-scrollbar-track {
+        background: rgba(71, 85, 105, 0.3);
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.5);
+        
+        &:hover {
+          background: rgba(99, 102, 241, 0.7);
+        }
+      }
+    }
+  }
+  
+  .card {
+    &__control-card {
+      border-top-color: rgba(71, 85, 105, 0.5);
+    }
+  }
+}
+
+.card-wrapper {
+	transition: all 0.3s ease;
+	transform-origin: center top;
+	will-change: transform;
+	
+	&.card-enter {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	
+	&.card-enter-active {
+		opacity: 1;
+		transform: translateY(0);
+		transition: opacity 0.5s ease, transform 0.5s ease;
+	}
+}

@@ -1,0 +1,88 @@
+@use "sass:color";
+@use "sass:map";
+@use "sass:list";
+@use "sass:string";
+
+// ============================================
+// ФУНКЦИИ И МИКСИНЫ
+// ============================================
+
+// Функция для затемнения цвета 
+@function darken-color($color, $percent) {
+  @return color.adjust($color, $lightness: -$percent * 1%);
+}
+
+// Функция для осветления цвета  
+@function lighten-color($color, $percent) {
+  @return color.adjust($color, $lightness: $percent * 1%);
+}
+
+// Функция для изменения прозрачности
+@function transparentize-color($color, $amount) {
+  @return color.adjust($color, $alpha: -$amount);
+}
+
+// Функция для увеличения насыщенности
+@function saturate-color($color, $percent) {
+  @return color.adjust($color, $saturation: $percent * 1%);
+}
+
+// Функция для уменьшения насыщенности
+@function desaturate-color($color, $percent) {
+  @return color.adjust($color, $saturation: -$percent * 1%);
+}
+
+// Функция для получения контрастного цвета текста
+@function get-contrast-color($color) {
+  @if (color.lightness($color) > 50) {
+    @return #000000; // черный для светлых фонов
+  } @else {
+    @return #ffffff; // белый для темных фонов
+  }
+}
+
+// Миксин для плавного перехода цвета
+@mixin color-transition($property: color, $duration: $transition-base) {
+  transition: $property $duration ease;
+}
+
+// Миксин для создания тени
+@mixin box-shadow($level) {
+  @if $level == 1 {
+    box-shadow: $shadow-sm;
+  } @else if $level == 2 {
+    box-shadow: $shadow-md;
+  } @else if $level == 3 {
+    box-shadow: $shadow-lg;
+  } @else if $level == 4 {
+    box-shadow: $shadow-xl;
+  }
+}
+
+// Миксин для создания скругленных углов
+@mixin border-radius($radius: $border-radius) {
+  border-radius: $radius;
+}
+
+// Миксин для создания плавного перехода
+@mixin transition($properties...) {
+  @if length($properties) == 0 {
+    transition: $transition-base;
+  } @else {
+    transition: $properties;
+  }
+}
+
+// Миксин для скрытия текста
+@mixin text-hide() {
+  overflow: hidden;
+  text-indent: 100%;
+  white-space: nowrap;
+}
+
+// Миксин для обрезки текста многоточием
+@mixin text-truncate() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

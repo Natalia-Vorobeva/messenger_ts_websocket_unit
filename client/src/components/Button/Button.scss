@@ -1,0 +1,81 @@
+@use "../../assets/styles/variables" as *;
+@use "../../assets/styles/mixins" as *;
+
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  overflow: hidden;
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  min-height: 36px;
+  max-width: 100%;
+  white-space: nowrap;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &[id="left"] {
+    opacity: .8;
+    background: $button-left-color;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+  
+  &[id="central"] {
+    opacity: .8;
+    background: $button-central-color;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+  
+  &[id="right"] {
+    opacity: .8;
+    background: $button-right-color;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+  
+  &_mini {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    min-height: 32px;
+    border-radius: 8px;
+  }
+  
+  &_inactive {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    
+    &:hover {
+      transform: none !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      background: inherit !important;
+    }
+  }
+}

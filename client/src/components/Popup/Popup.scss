@@ -1,0 +1,256 @@
+@use "../../assets/styles/variables" as *;
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding: 20px;
+	background-color: rgba(0, 0, 0, 0.8);
+	.card {
+		pointer-events: none;
+		&__copy {
+			pointer-events: auto;
+		}		
+	}
+  
+  &_showed {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+  
+  &__container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    z-index: 1;
+    animation: popupScaleIn 0.3s ease;
+  }
+  
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 90vh;
+  }
+  
+&__close {
+    position: absolute;
+		z-index: 2003;
+    top: 10px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    color: $text-inverse;
+    background: $button-central-color;
+    border-radius: 50%;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease; // Только фон и тень
+    
+    &:hover {
+      transform: scale(1.1); 
+      background: lighten-color($button-central-color, 10%);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+  
+  &__wrapper {
+    flex-shrink: 0;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+    
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+      
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
+  }
+  
+  &__list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px;
+    
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+      
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
+  }
+  
+  &__input {
+    flex-shrink: 0;
+    padding: 20px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;   
+   }
+  
+  @keyframes popupScaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    padding: 16px;
+    
+    &__container {
+      max-width: 90%;
+    }
+    
+    &__wrapper,
+    &__list {
+      padding: 20px;
+    }
+    
+    &__input {
+      padding: 16px 20px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding: 12px;
+    
+    &__container {
+      max-width: 100%;
+      max-height: 95vh;
+      border-radius: 12px;
+    }
+    
+    &__inner {
+      max-height: 95vh;
+    }
+    
+    &__close {
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      font-size: 20px;
+    }
+    
+    &__wrapper {
+      padding: 16px;
+      max-height: 35vh;
+    }
+    
+    &__list {
+      padding: 16px;
+    }
+    
+    &__input {
+      padding: 12px 16px;
+    }
+  }
+  
+  @media (max-width: 360px) {
+    padding: 8px;
+    
+    &__wrapper {
+      padding: 12px;
+      max-height: 30vh;
+    }
+    
+    &__list {
+      padding: 12px;
+    }
+    
+    &__input {
+      padding: 8px 12px;
+    }
+  }
+  
+  @media (max-height: 500px) and (orientation: landscape) {
+    padding: 8px;
+    align-items: flex-start;
+    
+    &__container {
+      max-height: 95vh;
+    }
+    
+    &__inner {
+      max-height: 95vh;
+    }
+    
+    &__wrapper {
+      max-height: 30vh;
+      padding: 12px;
+    }
+    
+    &__list {
+      max-height: 40vh;
+    }
+  }
+  
+  @supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+      padding-left: max(12px, env(safe-area-inset-left));
+      padding-right: max(12px, env(safe-area-inset-right));
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+  }
+}
