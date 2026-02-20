@@ -1,58 +1,99 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const db = require('./db');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // адрес клиента (Vite)
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"]
   }
 });
 
-// Тестовые данные (в реальном проекте можно хранить в БД)
-let messages = [
-  {
-    id: 1,
-    content: "Привет! Это первое сообщение.",
-    date: "2025-02-18 12:00:00",
-    liked: false,
-    author: "Система"
-  },
-  {
-    id: 2,
-    content: "Добро пожаловать в чат!",
-    date: "2025-02-18 12:05:00",
-    liked: true,
-    author: "Пользователь"
+let messages = { leftCol: [], centralCol: [], rightCol: [] };
+
+// Загружаем данные из БД при старте
+db.loadMessages((err, data) => {
+  if (err) {
+    console.error('Ошибка загрузки сообщений из БД:', err);
+  } else {
+    messages = data;
+    console.log('Сообщения загружены из БД');
   }
-];
+});
 
 io.on('connection', (socket) => {
-  console.log('Новое подключение:', socket.id);
+  socket.emit('initialMessages', messages);
 
-  // Отправляем начальные сообщения (только центральная колонка для простоты)
-  socket.emit('initialMessages', { messages });
-
-  // Обработка запроса старых сообщений
-  socket.on('loadOldMessages', ({ lastId }) => {
-    const olderMessages = messages.filter(msg => msg.id < lastId);
-    socket.emit('oldMessages', { messages: olderMessages });
+  socket.on('loadOldMessages', ({ column, lastId }) => {
+    console.log(`Запрос старых сообщений для колонки ${column} с lastId=${lastId}`);
+    const colMessages = messages[column + 'Col'] || [];
+    const older = colMessages.filter(msg => msg.id < lastId);
+    socket.emit('oldMessages', { column, messages: older });
   });
 
-  // Обработка нового сообщения (если клиент может отправлять)
-  socket.on('sendMessage', ({ text, author }) => {
+  socket.on('sendMessage', ({ column, text, author }) => {
+    const newId = Date.now(); // временный ID, в реальности лучше использовать автоинкремент
     const newMessage = {
-      id: messages.length + 1,
+      id: newId,
       content: text,
       date: new Date().toISOString().replace('T', ' ').substring(0, 19),
       liked: false,
       author: author || 'Аноним'
     };
-    messages.push(newMessage);
-    // Рассылаем всем клиентам
-    io.emit('newMessage', { message: newMessage });
+    db.saveMessage(newMessage, column + 'Col', (err) => {
+      if (err) {
+        console.error('Ошибка сохранения сообщения в БД:', err);
+        return;
+      }
+      messages[column + 'Col'].push(newMessage);
+      io.emit('newMessage', { column, message: newMessage });
+    });
+  });
+
+  socket.on('toggleLike', ({ id, column }) => {
+    const colKey = column + 'Col';
+    const message = messages[colKey].find(msg => msg.id === id);
+    if (!message) return;
+
+    message.liked = !message.liked;
+    db.updateMessageLike(id, colKey, message.liked, (err) => {
+      if (err) console.error('Ошибка обновления лайка в БД:', err);
+      io.emit('likeUpdated', { id, column, liked: message.liked });
+    });
+  });
+
+  socket.on('moveMessage', ({ id, fromColumn, toColumn }) => {
+    const fromKey = fromColumn + 'Col';
+    const toKey = toColumn + 'Col';
+
+    const fromMessages = messages[fromKey];
+    const index = fromMessages.findIndex(msg => msg.id === id);
+    if (index === -1) return;
+
+    const [movedMessage] = fromMessages.splice(index, 1);
+    messages[toKey].push(movedMessage);
+
+    db.moveMessage(id, fromKey, toKey, (err) => {
+      if (err) console.error('Ошибка перемещения сообщения в БД:', err);
+      io.emit('messageMoved', { id, fromColumn, toColumn });
+    });
+  });
+
+  socket.on('deleteMessage', ({ id, column }) => {
+    const colKey = column + 'Col';
+    const colMessages = messages[colKey];
+    const index = colMessages.findIndex(msg => msg.id === id);
+    if (index === -1) return;
+
+    colMessages.splice(index, 1);
+
+    db.deleteMessage(id, colKey, (err) => {
+      if (err) console.error('Ошибка удаления сообщения из БД:', err);
+      io.emit('messageDeleted', { id, column });
+    });
   });
 
   socket.on('disconnect', () => {

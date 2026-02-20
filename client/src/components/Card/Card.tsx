@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useTransition } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { apiSelectors } from '../../store/api/apiSelectors';
+import { socketService } from '../../services/socket';
 import { setChoice, setIsModal } from '../../store/api/apiSlice';
 import Button from '../Button/Button';
 import avatar from '../../assets/images/avatar.png';
@@ -9,7 +10,7 @@ import settings from '../../assets/images/settings.png';
 import comment from '../../assets/images/comment.png';
 import like from '../../assets/images/favourites.png';
 import './Card.scss';
-import { Message } from '../../types'; // импортируем тип
+import { Message } from '../../types';
 
 interface CardProps {
 	data: Message;
@@ -17,7 +18,7 @@ interface CardProps {
 	column: string;
 	className: string;
 	handleDelCard: (data: Message) => void;
-	handleFavourites: (data: Message) => void;
+	// handleFavourites: (data: Message) => void;
 	onMoveCard: (buttonName: string, data: Message, column: string) => void; // предположительно
 }
 
@@ -26,9 +27,6 @@ const Card: React.FC<CardProps> = ({
 	time,
 	column,
 	className,
-	handleDelCard,
-	handleFavourites,
-	onMoveCard
 }) => {
 	const dispatch = useDispatch();
 	const isModal = useSelector(apiSelectors.getIsModal);
@@ -67,6 +65,21 @@ const Card: React.FC<CardProps> = ({
 		setOutsideMenu(menu);
 	}, [menu]);
 
+	const handleFavourites = () => {
+		console.log('📤 [КЛИЕНТ] Отправка toggleLike', { id: data.id, column });
+		socketService.emit('toggleLike', { id: data.id, column });
+	};
+
+	const handleMove = (buttonName: string) => {
+  // buttonName – это целевая колонка (left, central, right)
+  if (buttonName === column) return; // не перемещаем ту же колонку
+  socketService.emit('moveMessage', {
+    id: data.id,
+    fromColumn: column,
+    toColumn: buttonName
+  });
+};
+
 	const handleClipboard = (text: string) => {
 		setSymbolCopy('✔');
 		startTransition(async () => {
@@ -77,9 +90,9 @@ const Card: React.FC<CardProps> = ({
 		}, 2000);
 	};
 
-	const handleDeleteCard = (data: Message) => {
-		handleDelCard(data);
-	};
+	const handleDelete = () => {
+  socketService.emit('deleteMessage', { id: data.id, column });
+};
 
 	const handleDimensionsIcon = () => {
 		setDimensions(!dimensions);
@@ -170,7 +183,7 @@ const Card: React.FC<CardProps> = ({
 													</p>
 												) : (
 													<p
-														onClick={() => handleDeleteCard(data)}
+														onClick={handleDelete}
 														className="card__menu-delete card__menu-delete_confirmation"
 													>
 														Удалить навсегда?
@@ -182,7 +195,7 @@ const Card: React.FC<CardProps> = ({
 									<img
 										src={like}
 										alt="В избранное"
-										onClick={() => handleFavourites(data)}
+										onClick={() => handleFavourites()}
 										className={`card__icon card__icon_type_favourites${data.liked ? '_active' : '_no-active'} ${isCardSelected ? 'opacity' : ''}`}
 									/>
 								</div>
@@ -195,7 +208,7 @@ const Card: React.FC<CardProps> = ({
 											buttonName="left"
 											data={data}
 											column={column as 'left' | 'central' | 'right'}
-											onMoveCard={onMoveCard}
+											onMoveCard={() => handleMove('left')}
 											className={`${column === 'left' ? 'button_inactive ' : ''} ${isCardSelected ? '' : 'button_mini'}`}
 											btnText="Левый"
 											hover={false}
@@ -205,7 +218,7 @@ const Card: React.FC<CardProps> = ({
 											buttonName="central"
 											data={data}
 											column={column as 'left' | 'central' | 'right'}
-											onMoveCard={onMoveCard}
+											onMoveCard={() => handleMove('central')}
 											className={`${column === 'central' ? 'button_inactive' : ''} ${isCardSelected ? '' : 'button_mini'}`}
 											btnText="Центр"
 											hover={false}
@@ -215,7 +228,7 @@ const Card: React.FC<CardProps> = ({
 											buttonName="right"
 											data={data}
 											column={column as 'left' | 'central' | 'right'}
-											onMoveCard={onMoveCard}
+											onMoveCard={() => handleMove('right')}
 											className={`${column === 'right' ? 'button_inactive' : ''} ${isCardSelected ? '' : 'button_mini'}`}
 											btnText="Правый"
 											hover={false}

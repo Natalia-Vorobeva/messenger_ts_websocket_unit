@@ -76,7 +76,6 @@ const LeftColumn: React.FC<ColumnProps> = ({ searchQuery = '', searchResults = [
               time={time(item.date)}
               data={item}
               handleDelCard={handleDelCard}
-              handleFavourites={handleFavourites}
               onMoveCard={() => {}} // пустая функция для обязательного пропа
             />
           </Suspense>

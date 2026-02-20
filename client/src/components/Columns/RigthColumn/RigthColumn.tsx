@@ -43,14 +43,14 @@ const RightColumn: React.FC<ColumnProps> = ({ searchQuery = '', searchResults = 
     }
   };
 
-  const handleFavourites = (data: Message) => {
-    const updatedMessage = { ...data, liked: !data.liked };
-    const newArr = rightCol.map((item) =>
-      JSON.stringify(item) === JSON.stringify(data) ? updatedMessage : item
-    );
-    const newObj = { ...messages, rightCol: newArr };
-    dispatch(handleAddingFavourires(newObj));
-  };
+  // const handleFavourites = (data: Message) => {
+  //   const updatedMessage = { ...data, liked: !data.liked };
+  //   const newArr = rightCol.map((item) =>
+  //     JSON.stringify(item) === JSON.stringify(data) ? updatedMessage : item
+  //   );
+  //   const newObj = { ...messages, rightCol: newArr };
+  //   dispatch(handleAddingFavourires(newObj));
+  // };
 
   const renderCards = (items: Message[]) => {
     if (items.length === 0) {
@@ -77,7 +77,7 @@ const RightColumn: React.FC<ColumnProps> = ({ searchQuery = '', searchResults = 
               time={time(item.date)}
               data={item}
               handleDelCard={handleDelCard}
-              handleFavourites={handleFavourites}
+              // handleFavourites={handleFavourites}
               onMoveCard={() => {}} // пустая функция для обязательного пропа
             />
           </Suspense>

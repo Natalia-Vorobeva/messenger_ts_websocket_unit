@@ -1,10 +1,10 @@
 export interface Message {
 	id: number;
-	content: string;
-	date: string;
-	liked: boolean;
-	author: string;
-	attachments?: Array<{ url: string }>;
+  content: string;
+  date: string; // ISO-строка
+  liked: boolean;
+  author: string;
+  attachments?: Array<{ url: string }>;
 }
 
 export interface MessagesData {
@@ -37,10 +37,9 @@ export interface ColumnProps {
 export interface ServerMessage {
 	id: number;
   content: string;
-  date: string;   
+  date: string; // исходный формат "YYYY-MM-DD HH:mm:ss"
   liked: boolean;
-  author: string; 
-  attachments?: Array<{ url: string }>;
+  author: string;
 }
 
 export interface InitialMessagesEvent {

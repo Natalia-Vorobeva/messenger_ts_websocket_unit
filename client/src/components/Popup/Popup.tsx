@@ -72,16 +72,16 @@ const Popup: React.FC = () => {
 		}
 	};
 
-	const handleFavourites = (data: Message) => {
-		if (!choice) return;
-		const column = choice.column as keyof MessagesData;
-		const updatedMessage = { ...data, liked: !data.liked };
-		const updatedColumn = messages[column].map(msg =>
-			msg.id === data.id ? updatedMessage : msg
-		);
-		const newMessages = { ...messages, [column]: updatedColumn };
-		dispatch(handleAddingFavourires(newMessages));
-	};
+	// const handleFavourites = (data: Message) => {
+	// 	if (!choice) return;
+	// 	const column = choice.column as keyof MessagesData;
+	// 	const updatedMessage = { ...data, liked: !data.liked };
+	// 	const updatedColumn = messages[column].map(msg =>
+	// 		msg.id === data.id ? updatedMessage : msg
+	// 	);
+	// 	const newMessages = { ...messages, [column]: updatedColumn };
+	// 	dispatch(handleAddingFavourires(newMessages));
+	// };
 
 	const onSubmit = (e: React.FormEvent<HTMLFormElement>, value: string) => {
 		e.preventDefault();
@@ -108,7 +108,7 @@ const Popup: React.FC = () => {
 					<div ref={wrapperRef} className="popup__wrapper">
 						<Card
 							time={choice.time}
-							handleFavourites={handleFavourites}
+							// handleFavourites={handleFavourites}
 							handleDelCard={handleDelCard}
 							column={choice.column}
 							data={choice.object}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { apiSelectors } from '../../../store/api/apiSelectors';
-import { handleDeleteCard, setIsModal, handleAddingFavourires } from '../../../store/api/apiSlice';
+import { handleDeleteCard, setIsModal } from '../../../store/api/apiSlice';
 import { Message, ColumnProps } from '../../../types';
 import '../Column.scss';
 
@@ -52,16 +52,6 @@ const CentralColumn: React.FC<ColumnProps> = ({ searchQuery = '', searchResults 
     }
   };
 
-  const handleFavourites = (data: Message) => {
-    // Переключаем состояние лайка
-    const updatedMessage = { ...data, liked: !data.liked };
-    const newArr = centralCol.map((item) =>
-      JSON.stringify(item) === JSON.stringify(data) ? updatedMessage : item
-    );
-    const newObj = { ...messages, centralCol: newArr };
-    dispatch(handleAddingFavourires(newObj));
-  };
-
   const renderCards = (items: Message[]) => {
     if (items.length === 0) {
       return (
@@ -87,7 +77,6 @@ const CentralColumn: React.FC<ColumnProps> = ({ searchQuery = '', searchResults 
               time={time(item.date)}
               data={item}
               handleDelCard={handleDelCard}
-              handleFavourites={handleFavourites}
               onMoveCard={() => {}} // пустая функция для обязательного пропа
             />
           </Suspense>

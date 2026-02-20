@@ -31,16 +31,29 @@ const apiSlice = createSlice({
 		setIsModal: (state, action: PayloadAction<boolean>) => {
 			state.isModal = action.payload;
 		},
-		setDataMessages: (state, action: PayloadAction<Message[]>) => {
-			const arrModified = action.payload.map(object => ({
-				...object,
-				date: object.date.replace(/ /g, 'T') + 'Z'
-			}));
-			arrModified.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-			const ids = arrModified.map(object => object.id);
-			state.idLast = Math.max(...ids);
-			state.dataMessages.centralCol = arrModified;
+		setDataMessages: (state, action: PayloadAction<MessagesData>) => {
+			state.dataMessages = action.payload;
+			// Вычисляем idLast из всех сообщений (опционально)
+			const allMessages = [
+				...action.payload.leftCol,
+				...action.payload.centralCol,
+				...action.payload.rightCol
+			];
+			if (allMessages.length > 0) {
+				const ids = allMessages.map(msg => msg.id);
+				state.idLast = Math.max(...ids);
+			}
 		},
+		// setDataMessages: (state, action: PayloadAction<Message[]>) => {
+		// 	const arrModified = action.payload.map(object => ({
+		// 		...object,
+		// 		date: object.date.replace(/ /g, 'T') + 'Z'
+		// 	}));
+		// 	arrModified.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+		// 	const ids = arrModified.map(object => object.id);
+		// 	state.idLast = Math.max(...ids);
+		// 	state.dataMessages.centralCol = arrModified;
+		// },
 		setNewMessages: (state, action: PayloadAction<{ centralCol: Message[] }>) => {
 			const currentCentralCol = state.dataMessages.centralCol;
 			const newCentralCol = action.payload.centralCol;
@@ -103,7 +116,50 @@ const apiSlice = createSlice({
 		},
 		onToggleReverse: (state, action: PayloadAction<boolean>) => {
 			state.isReverse = action.payload;
-		}
+		},
+		updateLike: (state, action: PayloadAction<{ id: number; column: string; liked: boolean }>) => {
+			const { id, column, liked } = action.payload;
+			console.log(id, column, liked, 'id, column, liked')
+			const colKey = `${column}Col` as keyof MessagesData;
+			const messages = state.dataMessages[colKey];
+			const index = messages.findIndex(msg => msg.id === id);
+			if (index !== -1) {
+				// Создаём новый массив с обновлённым сообщением
+				const updatedMessage = { ...messages[index], liked };
+				state.dataMessages[colKey] = [
+					...messages.slice(0, index),
+					updatedMessage,
+					...messages.slice(index + 1)
+				];
+				console.log(updatedMessage, 'updatedMessage')
+			}
+		},
+		moveMessageReducer: (state, action: PayloadAction<{ id: number; fromColumn: string; toColumn: string }>) => {
+			const { id, fromColumn, toColumn } = action.payload;
+			const fromKey = `${fromColumn}Col` as keyof MessagesData;
+			const toKey = `${toColumn}Col` as keyof MessagesData;
+
+			const fromMessages = state.dataMessages[fromKey];
+			const messageIndex = fromMessages.findIndex(msg => msg.id === id);
+			if (messageIndex === -1) return;
+
+			// Удаляем сообщение из исходной колонки
+			const [movedMessage] = fromMessages.splice(messageIndex, 1);
+
+			// Добавляем в целевую колонку с сохранением сортировки (по дате)
+			const toMessages = state.dataMessages[toKey];
+			const newToMessages = [...toMessages, movedMessage].sort(
+				(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+			);
+			state.dataMessages[toKey] = newToMessages;
+		},
+		deleteMessageReducer: (state, action: PayloadAction<{ id: number; column: string }>) => {
+			const { id, column } = action.payload;
+			console.log(id, column)
+			const colKey = `${column}Col` as keyof MessagesData;
+			const messages = state.dataMessages[colKey];
+			state.dataMessages[colKey] = messages.filter(msg => msg.id !== id);
+		},
 	}
 });
 
@@ -118,7 +174,10 @@ export const {
 	handleAddingFavourires,
 	setStateBtnFilterFavourites,
 	setChoice,
-	onToggleReverse
+	onToggleReverse,
+	updateLike,
+	moveMessageReducer,
+	deleteMessageReducer
 } = apiSlice.actions;
 
 export default apiSlice.reducer;
