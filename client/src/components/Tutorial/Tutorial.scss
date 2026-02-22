@@ -1,0 +1,90 @@
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.tutorial-modal {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+
+.tutorial-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.2s;
+  &:hover { color: #333; }
+}
+
+.tutorial-modal h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #013878;
+}
+
+.tutorial-modal ul {
+  padding-left: 20px;
+  margin: 16px 0;
+  li {
+    margin-bottom: 8px;
+    color: #333;
+    line-height: 1.5;
+  }
+  strong {
+    color: #013878;
+  }
+}
+
+.tutorial-modal p {
+  color: #666;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.tutorial-gotit {
+  background: #FF4D00;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background 0.2s, transform 0.1s;
+  &:hover { background: #e04400; }
+  &:active { transform: scale(0.98); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

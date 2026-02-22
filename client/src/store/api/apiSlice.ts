@@ -44,25 +44,14 @@ const apiSlice = createSlice({
 				state.idLast = Math.max(...ids);
 			}
 		},
-		// setDataMessages: (state, action: PayloadAction<Message[]>) => {
-		// 	const arrModified = action.payload.map(object => ({
-		// 		...object,
-		// 		date: object.date.replace(/ /g, 'T') + 'Z'
-		// 	}));
-		// 	arrModified.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-		// 	const ids = arrModified.map(object => object.id);
-		// 	state.idLast = Math.max(...ids);
-		// 	state.dataMessages.centralCol = arrModified;
-		// },
 		setNewMessages: (state, action: PayloadAction<{ centralCol: Message[] }>) => {
-			const currentCentralCol = state.dataMessages.centralCol;
-			const newCentralCol = action.payload.centralCol;
-			if (JSON.stringify(currentCentralCol) !== JSON.stringify(newCentralCol)) {
-				state.dataMessages.centralCol = newCentralCol;
-				if (newCentralCol.length > 0) {
-					const ids = newCentralCol.map(msg => msg.id);
-					state.idLast = Math.max(...ids);
-				}
+			const newMessages = action.payload.centralCol;
+			if (newMessages.length > 0) {
+				// Добавляем новые сообщения к существующим
+				state.dataMessages.centralCol = [...state.dataMessages.centralCol, ...newMessages];
+				// Обновляем idLast (берём максимальный id из всех сообщений центральной колонки)
+				const allIds = state.dataMessages.centralCol.map(msg => msg.id);
+				state.idLast = Math.max(...allIds);
 			}
 		},
 		setOldMessages: (state, action: PayloadAction<Message[]>) => {
@@ -140,18 +129,14 @@ const apiSlice = createSlice({
 			const toKey = `${toColumn}Col` as keyof MessagesData;
 
 			const fromMessages = state.dataMessages[fromKey];
-			const messageIndex = fromMessages.findIndex(msg => msg.id === id);
-			if (messageIndex === -1) return;
+			const index = fromMessages.findIndex(msg => msg.id === id);
+			if (index === -1) return;
 
-			// Удаляем сообщение из исходной колонки
-			const [movedMessage] = fromMessages.splice(messageIndex, 1);
-
-			// Добавляем в целевую колонку с сохранением сортировки (по дате)
+			const [movedMessage] = fromMessages.splice(index, 1);
 			const toMessages = state.dataMessages[toKey];
-			const newToMessages = [...toMessages, movedMessage].sort(
+			state.dataMessages[toKey] = [...toMessages, movedMessage].sort(
 				(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
 			);
-			state.dataMessages[toKey] = newToMessages;
 		},
 		deleteMessageReducer: (state, action: PayloadAction<{ id: number; column: string }>) => {
 			const { id, column } = action.payload;

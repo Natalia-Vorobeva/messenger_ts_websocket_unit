@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Toaster, toast } from 'react-hot-toast';
 import {
 	onToggleReverse,
 	setDataMessages,
@@ -8,19 +9,20 @@ import {
 	setStateBtnFilterFavourites,
 	updateLike,
 	moveMessageReducer,
-	deleteMessageReducer,
-	handleAddingFavourires,
-	setLastId
+	deleteMessageReducer
 } from './store/api/apiSlice';
 import { apiSelectors } from './store/api/apiSelectors';
 import { socketService } from './services/socket';
 import { MessagesData, ServerMessage, Message } from './types';
+import Tutorial from './components/Tutorial/Tutorial';
 import FormSearch from './components/FormSearch/FormSearch';
 import Preloader from './components/Preloader/Preloader';
 import RightColumn from './components/Columns/RigthColumn/RigthColumn';
 import LeftColumn from './components/Columns/LeftColumn/LeftColumn';
 import CentralColumn from './components/Columns/CentralColumn/CentralColumn';
 import Popup from './components/Popup/Popup';
+import MessageInput from './components/MessageInput/MessageInput';
+import 'intro.js/introjs.css';
 import './index.css';
 import './App.scss';
 
@@ -39,28 +41,22 @@ function App() {
 	const [searchValue, setSearchValue] = useState('');
 	const [activeTab, setActiveTab] = useState('central');
 	const ref = useRef<HTMLDivElement>(null);
-
+	localStorage.removeItem('tutorialSeen')
 	useEffect(() => {
 		const handleResize = () => setWidth(window.innerWidth);
 		window.addEventListener('resize', handleResize);
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
-
-
 	useEffect(() => {
-		// Подключаемся к серверу
 		socketService.connect(WS_URL);
-
-
-		// Подписки на события
 		socketService.on('initialMessages', (data: MessagesData) => {
-			console.log('Received initialMessages:', data);
 			setIsLoading(false);
 			dispatch(setDataMessages(data));
 		});
 
 		socketService.on('newMessage', (data: { column: string; message: ServerMessage }) => {
+			toast.success(`Новое сообщение в колонке ${data.column}`);
 			const msgWithDate: Message = { ...data.message, date: data.message.date.replace(' ', 'T') + 'Z' };
 			// Пока добавляем в центральную колонку (позже доработаем под колонки)
 			dispatch(setNewMessages({ centralCol: [msgWithDate] }));
@@ -75,6 +71,7 @@ function App() {
 			setOldMessagesLoaded(true);
 		});
 		socketService.on('likeUpdated', (data: { id: number; column: string; liked: boolean }) => {
+			toast.success('Лайк обновлён');
 			dispatch(updateLike(data));
 		});
 
@@ -134,6 +131,7 @@ function App() {
 	function handleClearSearch() {
 		setSearchValue('');
 	}
+	console.log(isLoading)
 
 	const getColumnCounts = (column: 'left' | 'central' | 'right'): { total: number; favorites: number } => {
 		const columnKey = `${column}Col` as keyof MessagesData;
@@ -157,125 +155,130 @@ function App() {
 
 	return (
 		<div className="app">
+			<Tutorial isDataLoaded={!isLoading} windowWidth={width} />
+			<Toaster position="top-right" />
 			{isModal && <Popup />}
-			{isLoading ? (
-				<Preloader />
-			) : (
-				<div ref={ref} className="app__content">
-					<div className="app__control-header">
-						<div className="app__header-top">
-							<h1 className="app__title">My <span className="app__title-span">♡</span> messenger</h1>
-							<div className="app__search-container">
-								<div className="app__search">
-									<FormSearch
-										onSubmit={handleSearch}
-										initialValue={searchValue}
-										onClear={handleClearSearch}
-									/>
+			{
+				isLoading ? (
+					<Preloader />
+				) : (
+					<div ref={ref} className="app__content">
+						<div className="app__control-header">
+							<div className="app__header-top">
+								<h1 className="app__title">My <span className="app__title-span">♡</span> messenger</h1>
+								<div className="app__search-container">
+									<div className="app__search">
+										<FormSearch
+											onSubmit={handleSearch}
+											initialValue={searchValue}
+											onClear={handleClearSearch}
+										/>
+									</div>
+									{searchLength !== null && (
+										<div className="app__search-info">• Найдено: {searchLength}</div>
+									)}
 								</div>
-								{searchLength !== null && (
-									<div className="app__search-info">• Найдено: {searchLength}</div>
-								)}
+							</div>
+							<div className="app__header-bottom">
+								<div className="app__header-content">
+									<button
+										onClick={handleLoadOldMessages}
+										disabled={oldMessagesLoaded}
+										className={`app__button-load ${oldMessagesLoaded ? 'app__button-load_disabled' : ''}`}
+									>
+										<span className="app__button-load-icon">↻</span>
+										<span className="app__button-load-text">
+											{oldMessagesLoaded ? 'Загружено' : 'Загрузить предыдущие'}
+										</span>
+									</button>
+									<div className="app__sort-buttons">
+										<button
+											onClick={() => dispatch(onToggleReverse(!isReverse))}
+											className="app__button-sort-toggle"
+											aria-label={isReverse ? "Показать новые сверху" : "Показать старые сверху"}
+											title={isReverse ? "Показать новые сверху" : "Показать старые сверху"}
+										>
+											<span className={`app__button-sort-icon ${isReverse ? 'app__button-sort-icon_reverse' : ''}`}>↕</span>
+											<span className="app__button-sort-text">
+												{isReverse ? "Старые сверху" : "Новые сверху"}
+											</span>
+										</button>
+										<button
+											onClick={() => dispatch(setStateBtnFilterFavourites(!btnFilterFavourites))}
+											className="app__button-filter-toggle"
+											aria-label={btnFilterFavourites ? "Показать все сообщения" : "Показать избранное"}
+											title={btnFilterFavourites ? "Показать все сообщения" : "Показать избранное"}
+										>
+											<span className={`app__button-filter-icon ${!btnFilterFavourites ? 'app__button-filter-icon_active' : ''}`}>
+												{!btnFilterFavourites ? '★' : '☆'}
+											</span>
+											<span className="app__button-filter-text">
+												{!btnFilterFavourites ? "Избранное" : "Все"}
+											</span>
+										</button>
+									</div>
+								</div>
 							</div>
 						</div>
-						<div className="app__header-bottom">
-							<div className="app__header-content">
+						<MessageInput />
+
+						{width <= 900 && (
+							<div className="app__column-tabs">
 								<button
-									onClick={handleLoadOldMessages}
-									disabled={oldMessagesLoaded}
-									className={`app__button-load ${oldMessagesLoaded ? 'app__button-load_disabled' : ''}`}
+									className={`app__column-tab ${activeTab === 'left' ? 'app__column-tab_active' : ''}`}
+									onClick={() => setActiveTab('left')}
 								>
-									<span className="app__button-load-icon">↻</span>
-									<span className="app__button-load-text">
-										{oldMessagesLoaded ? 'Загружено' : 'Загрузить предыдущие'}
+									<span className="app__column-tab-name">Левая</span>
+									<span className="app__column-tab-count">
+										({getColumnCounts('left').favorites}/{getColumnCounts('left').total})
 									</span>
 								</button>
-								<div className="app__sort-buttons">
-									<button
-										onClick={() => dispatch(onToggleReverse(!isReverse))}
-										className="app__button-sort-toggle"
-										aria-label={isReverse ? "Показать новые сверху" : "Показать старые сверху"}
-										title={isReverse ? "Показать новые сверху" : "Показать старые сверху"}
-									>
-										<span className={`app__button-sort-icon ${isReverse ? 'app__button-sort-icon_reverse' : ''}`}>↕</span>
-										<span className="app__button-sort-text">
-											{isReverse ? "Старые сверху" : "Новые сверху"}
-										</span>
-									</button>
-									<button
-										onClick={() => dispatch(setStateBtnFilterFavourites(!btnFilterFavourites))}
-										className="app__button-filter-toggle"
-										aria-label={btnFilterFavourites ? "Показать все сообщения" : "Показать избранное"}
-										title={btnFilterFavourites ? "Показать все сообщения" : "Показать избранное"}
-									>
-										<span className={`app__button-filter-icon ${!btnFilterFavourites ? 'app__button-filter-icon_active' : ''}`}>
-											{!btnFilterFavourites ? '★' : '☆'}
-										</span>
-										<span className="app__button-filter-text">
-											{!btnFilterFavourites ? "Избранное" : "Все"}
-										</span>
-									</button>
-								</div>
+								<button
+									className={`app__column-tab ${activeTab === 'central' ? 'app__column-tab_active' : ''}`}
+									onClick={() => setActiveTab('central')}
+								>
+									<span className="app__column-tab-name">Центральная</span>
+									<span className="app__column-tab-count">
+										({getColumnCounts('central').favorites}/{getColumnCounts('central').total})
+									</span>
+								</button>
+								<button
+									className={`app__column-tab ${activeTab === 'right' ? 'app__column-tab_active' : ''}`}
+									onClick={() => setActiveTab('right')}
+								>
+									<span className="app__column-tab-name">Правая</span>
+									<span className="app__column-tab-count">
+										({getColumnCounts('right').favorites}/{getColumnCounts('right').total})
+									</span>
+								</button>
 							</div>
-						</div>
-					</div>
-
-					{width <= 900 && (
-						<div className="app__column-tabs">
-							<button
-								className={`app__column-tab ${activeTab === 'left' ? 'app__column-tab_active' : ''}`}
-								onClick={() => setActiveTab('left')}
-							>
-								<span className="app__column-tab-name">Левая</span>
-								<span className="app__column-tab-count">
-									({getColumnCounts('left').favorites}/{getColumnCounts('left').total})
-								</span>
-							</button>
-							<button
-								className={`app__column-tab ${activeTab === 'central' ? 'app__column-tab_active' : ''}`}
-								onClick={() => setActiveTab('central')}
-							>
-								<span className="app__column-tab-name">Центральная</span>
-								<span className="app__column-tab-count">
-									({getColumnCounts('central').favorites}/{getColumnCounts('central').total})
-								</span>
-							</button>
-							<button
-								className={`app__column-tab ${activeTab === 'right' ? 'app__column-tab_active' : ''}`}
-								onClick={() => setActiveTab('right')}
-							>
-								<span className="app__column-tab-name">Правая</span>
-								<span className="app__column-tab-count">
-									({getColumnCounts('right').favorites}/{getColumnCounts('right').total})
-								</span>
-							</button>
-						</div>
-					)}
-
-					<div className="app__columns">
-						{width > 900 ? (
-							<>
-								<LeftColumn searchQuery={searchValue} searchResults={searchData.leftCol} />
-								<CentralColumn searchQuery={searchValue} searchResults={searchData.centralCol} />
-								<RightColumn searchQuery={searchValue} searchResults={searchData.rightCol} />
-							</>
-						) : (
-							<>
-								{activeTab === 'left' && (
-									<LeftColumn searchQuery={searchValue} searchResults={searchData.leftCol} />
-								)}
-								{activeTab === 'central' && (
-									<CentralColumn searchQuery={searchValue} searchResults={searchData.centralCol} />
-								)}
-								{activeTab === 'right' && (
-									<RightColumn searchQuery={searchValue} searchResults={searchData.rightCol} />
-								)}
-							</>
 						)}
+
+						<div className="app__columns">
+							{width > 900 ? (
+								<>
+									<LeftColumn searchQuery={searchValue} searchResults={searchData.leftCol} />
+									<CentralColumn searchQuery={searchValue} searchResults={searchData.centralCol} />
+									<RightColumn searchQuery={searchValue} searchResults={searchData.rightCol} />
+								</>
+							) : (
+								<>
+									{activeTab === 'left' && (
+										<LeftColumn searchQuery={searchValue} searchResults={searchData.leftCol} />
+									)}
+									{activeTab === 'central' && (
+										<CentralColumn searchQuery={searchValue} searchResults={searchData.centralCol} />
+									)}
+									{activeTab === 'right' && (
+										<RightColumn searchQuery={searchValue} searchResults={searchData.rightCol} />
+									)}
+								</>
+							)}
+						</div>
 					</div>
-				</div>
-			)}
-		</div>
+				)
+			}
+		</div >
 	);
 }
 

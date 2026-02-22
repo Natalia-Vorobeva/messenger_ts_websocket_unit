@@ -20,13 +20,8 @@ const Preloader: React.FC = () => {
         <>
           <div className={`preloader__wrapper preloader__wrapper_${text ? 'visible' : ''}`}></div>
           <p className="preloader__text">Кажется что-то пошло не так...!</p>
-          <p className="preloader__text">Внимание!</p>
-          <div className="preloader__info">
-            Если проблема в CORS – решается через расширение для браузера или запуск хрома из консоли:
-            open -na Google\ Chrome --args --disable-web-security --user-data-dir="/tmp/chrome_dev"
-            Или поищите в интернет, например для MAC OS команда несколько другая
-            ЛУЧШИЙ вариант - поставить расширение для хрома
-          </div>
+          <p className="preloader__text">Перезагрузите страницу</p>
+         
         </>
       )}
     </div>
