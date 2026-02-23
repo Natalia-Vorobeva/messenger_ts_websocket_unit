@@ -76,16 +76,19 @@ function App() {
 		});
 
 		socketService.on('messageMoved', (data: { id: number; fromColumn: string; toColumn: string }) => {
-			console.log('📦 messageMoved получен:', data);
+			toast.success(`Сообщение перемещено из ${data.fromColumn} в ${data.toColumn}`);
 			dispatch(moveMessageReducer(data));
 		});
 
 		socketService.on('messageDeleted', (data: { id: number; column: string }) => {
-			console.log('🗑️ messageDeleted получен:', data);
+			toast.success('Сообщение удалено');
 			dispatch(deleteMessageReducer(data));
 		});
 
-		socketService.on('error', (err) => console.error('Socket error:', err));
+		socketService.on('error', (err) => {
+			toast.error('Ошибка соединения');
+			console.error(err);
+		});
 
 		// Отписка и отключение при размонтировании
 		return () => {
@@ -156,7 +159,23 @@ function App() {
 	return (
 		<div className="app">
 			<Tutorial isDataLoaded={!isLoading} windowWidth={width} />
-			<Toaster position="top-right" />
+			<Toaster
+				position="top-right"
+				toastOptions={{
+    duration: 3000,
+    style: {
+      background: '#363636',
+      color: '#fff',
+      borderRadius: '8px',
+      padding: '12px 16px',
+      boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+      animation: 'slideInToast 0.3s ease',
+    },
+    success: { style: { background: '#4caf50' } },
+    error: { style: { background: '#f44336' } },
+  }}
+
+			/>
 			{isModal && <Popup />}
 			{
 				isLoading ? (

@@ -55,4 +55,5 @@ describe('apiSlice', () => {
   const newState = reducer(state, action);
   expect(newState.dataMessages.centralCol).toHaveLength(0);
 });
+
 });

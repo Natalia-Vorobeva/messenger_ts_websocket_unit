@@ -4,8 +4,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(3px);
+  background: radial-gradient(circle at 30% 30%, rgba(1,56,120,0.8) 0%, rgba(0,0,0,0.6) 100%);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,4 +87,25 @@
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+.tutorial-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: #4a5568;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #013878;
+  }
+
+  &:hover {
+    color: #1e293b;
+  }
 }
