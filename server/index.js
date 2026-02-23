@@ -23,30 +23,30 @@ let messages = { leftCol: [], centralCol: [], rightCol: [] };
 // Инициализация таблицы и загрузка данных
 async function initDB() {
 	await pool.query(`
-    CREATE TABLE IF NOT EXISTS messages (
-      id SERIAL PRIMARY KEY,
-      content TEXT NOT NULL,
-      date TEXT NOT NULL,
-      liked BOOLEAN DEFAULT false,
-      author TEXT NOT NULL,
-      column TEXT NOT NULL
-    )
-  `);
+  CREATE TABLE IF NOT EXISTS messages (
+    id SERIAL PRIMARY KEY,
+    content TEXT NOT NULL,
+    date TEXT NOT NULL,
+    liked BOOLEAN DEFAULT false,
+    author TEXT NOT NULL,
+    col_name TEXT NOT NULL   -- было column
+  )
+`);
 	console.log('Table "messages" is ready');
 
 	// Загружаем все сообщения
 	const res = await pool.query('SELECT * FROM messages');
 	const rows = res.rows;
 	messages = {
-		leftCol: rows.filter(r => r.column === 'leftCol').map(removeColumnField),
-		centralCol: rows.filter(r => r.column === 'centralCol').map(removeColumnField),
-		rightCol: rows.filter(r => r.column === 'rightCol').map(removeColumnField)
+		leftCol: rows.filter(r => r.col_name === 'leftCol').map(removeColumnField),
+		centralCol: rows.filter(r => r.col_name === 'centralCol').map(removeColumnField),
+		rightCol: rows.filter(r => r.col_name === 'rightCol').map(removeColumnField)
 	};
 	console.log('Messages loaded from DB');
 }
 
 function removeColumnField(msg) {
-	const { column, ...rest } = msg;
+	const { col_name, ...rest } = msg;
 	return rest;
 }
 
@@ -75,7 +75,7 @@ io.on('connection', (socket) => {
 		};
 		try {
 			await pool.query(
-				'INSERT INTO messages (id, content, date, liked, author, column) VALUES ($1, $2, $3, $4, $5, $6)',
+				'INSERT INTO messages (id, content, date, liked, author, col_name) VALUES ($1, $2, $3, $4, $5, $6)',
 				[newId, text, newMessage.date, false, author || 'Аноним', column + 'Col']
 			);
 			messages[column + 'Col'].push(newMessage);
@@ -92,8 +92,7 @@ io.on('connection', (socket) => {
 
 		message.liked = !message.liked;
 		try {
-			await pool.query('UPDATE messages SET liked = $1 WHERE id = $2 AND column = $3', [message.liked, id, colKey]);
-			io.emit('likeUpdated', { id, column, liked: message.liked });
+			await pool.query('UPDATE messages SET liked = $1 WHERE id = $2 AND col_name = $3', [message.liked, id, colKey]);
 		} catch (err) {
 			console.error('Error updating like:', err);
 		}
@@ -111,8 +110,7 @@ io.on('connection', (socket) => {
 		messages[toKey].push(movedMessage);
 
 		try {
-			await pool.query('UPDATE messages SET column = $1 WHERE id = $2 AND column = $3', [toKey, id, fromKey]);
-			io.emit('messageMoved', { id, fromColumn, toColumn });
+			await pool.query('UPDATE messages SET col_name = $1 WHERE id = $2 AND col_name = $3', [toKey, id, fromKey]);
 		} catch (err) {
 			console.error('Error moving message:', err);
 		}
@@ -127,8 +125,7 @@ io.on('connection', (socket) => {
 		colMessages.splice(index, 1);
 
 		try {
-			await pool.query('DELETE FROM messages WHERE id = $1 AND column = $2', [id, colKey]);
-			io.emit('messageDeleted', { id, column });
+			await pool.query('DELETE FROM messages WHERE id = $1 AND col_name = $2', [id, colKey]);
 		} catch (err) {
 			console.error('Error deleting message:', err);
 		}
