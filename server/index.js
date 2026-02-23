@@ -24,35 +24,35 @@ let messages = { leftCol: [], centralCol: [], rightCol: [] };
 async function initDB() {
 	await pool.query(`
   CREATE TABLE IF NOT EXISTS messages (
-    id SERIAL PRIMARY KEY,
-    content TEXT NOT NULL,
-    date TEXT NOT NULL,
-    liked BOOLEAN DEFAULT false,
-    author TEXT NOT NULL,
-    col_name TEXT NOT NULL   -- было column
-  )
+  id BIGSERIAL PRIMARY KEY,
+  content TEXT NOT NULL,
+  date TEXT NOT NULL,
+  liked BOOLEAN DEFAULT false,
+  author TEXT NOT NULL,
+  col_name TEXT NOT NULL
+)
 `);
 	console.log('Table "messages" is ready');
 
 	const countRes = await pool.query('SELECT COUNT(*) FROM messages');
-if (parseInt(countRes.rows[0].count) === 0) {
-  // вставляем несколько тестовых сообщений
-  const testMessages = [
-    [1, 'Привет из левой колонки!', '2025-02-18 10:00:00', false, 'Левый автор', 'leftCol'],
-    [2, 'Ещё одно левое сообщение', '2025-02-18 10:05:00', true, 'Автор 2', 'leftCol'],
-    [3, 'Центральное сообщение 1', '2025-02-18 10:10:00', false, 'Центр', 'centralCol'],
-    [4, 'Центральное сообщение 2', '2025-02-18 10:15:00', true, 'Пользователь', 'centralCol'],
-    [5, 'Правое сообщение 1', '2025-02-18 10:20:00', false, 'Правый', 'rightCol'],
-    [6, 'Правое сообщение 2', '2025-02-18 10:25:00', true, 'Ещё автор', 'rightCol']
-  ];
-  for (const msg of testMessages) {
-    await pool.query(
-      'INSERT INTO messages (id, content, date, liked, author, col_name) VALUES ($1, $2, $3, $4, $5, $6)',
-      msg
-    );
-  }
-  console.log('Test messages inserted');
-}
+	if (parseInt(countRes.rows[0].count) === 0) {
+		// вставляем несколько тестовых сообщений
+		const testMessages = [
+			[1, 'Привет из левой колонки!', '2025-02-18 10:00:00', false, 'Левый автор', 'leftCol'],
+			[2, 'Ещё одно левое сообщение', '2025-02-18 10:05:00', true, 'Автор 2', 'leftCol'],
+			[3, 'Центральное сообщение 1', '2025-02-18 10:10:00', false, 'Центр', 'centralCol'],
+			[4, 'Центральное сообщение 2', '2025-02-18 10:15:00', true, 'Пользователь', 'centralCol'],
+			[5, 'Правое сообщение 1', '2025-02-18 10:20:00', false, 'Правый', 'rightCol'],
+			[6, 'Правое сообщение 2', '2025-02-18 10:25:00', true, 'Ещё автор', 'rightCol']
+		];
+		for (const msg of testMessages) {
+			await pool.query(
+				'INSERT INTO messages (id, content, date, liked, author, col_name) VALUES ($1, $2, $3, $4, $5, $6)',
+				msg
+			);
+		}
+		console.log('Test messages inserted');
+	}
 
 	// Загружаем все сообщения
 	const res = await pool.query('SELECT * FROM messages');
@@ -70,7 +70,6 @@ function removeColumnField(msg) {
 	return rest;
 }
 
-// Health-check для keep-alive
 app.get('/health', (req, res) => res.send('OK'));
 
 io.on('connection', (socket) => {
@@ -85,19 +84,19 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('sendMessage', async ({ column, text, author }) => {
-		const newId = Date.now(); // временно, но лучше использовать автоинкремент БД
-		const newMessage = {
-			id: newId,
-			content: text,
-			date: new Date().toISOString().replace('T', ' ').substring(0, 19),
-			liked: false,
-			author: author || 'Аноним'
-		};
 		try {
-			await pool.query(
-				'INSERT INTO messages (id, content, date, liked, author, col_name) VALUES ($1, $2, $3, $4, $5, $6)',
-				[newId, text, newMessage.date, false, author || 'Аноним', column + 'Col']
+			const result = await pool.query(
+				'INSERT INTO messages (content, date, liked, author, col_name) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+				[text, new Date().toISOString().replace('T', ' ').substring(0, 19), false, author || 'Аноним', column + 'Col']
 			);
+			const newId = result.rows[0].id;
+			const newMessage = {
+				id: newId,
+				content: text,
+				date: new Date().toISOString().replace('T', ' ').substring(0, 19),
+				liked: false,
+				author: author || 'Аноним'
+			};
 			messages[column + 'Col'].push(newMessage);
 			io.emit('newMessage', { column, message: newMessage });
 		} catch (err) {
@@ -113,43 +112,46 @@ io.on('connection', (socket) => {
 		message.liked = !message.liked;
 		try {
 			await pool.query('UPDATE messages SET liked = $1 WHERE id = $2 AND col_name = $3', [message.liked, id, colKey]);
+			io.emit('likeUpdated', { id, column, liked: message.liked });
 		} catch (err) {
 			console.error('Error updating like:', err);
 		}
 	});
 
 	socket.on('moveMessage', async ({ id, fromColumn, toColumn }) => {
-		const fromKey = fromColumn + 'Col';
-		const toKey = toColumn + 'Col';
+  const fromKey = fromColumn + 'Col';
+  const toKey = toColumn + 'Col';
 
-		const fromMessages = messages[fromKey];
-		const index = fromMessages.findIndex(msg => msg.id === id);
-		if (index === -1) return;
+  const fromMessages = messages[fromKey];
+  const index = fromMessages.findIndex(msg => msg.id === id);
+  if (index === -1) return;
 
-		const [movedMessage] = fromMessages.splice(index, 1);
-		messages[toKey].push(movedMessage);
+  const [movedMessage] = fromMessages.splice(index, 1);
+  messages[toKey].push(movedMessage);
 
-		try {
-			await pool.query('UPDATE messages SET col_name = $1 WHERE id = $2 AND col_name = $3', [toKey, id, fromKey]);
-		} catch (err) {
-			console.error('Error moving message:', err);
-		}
-	});
+  try {
+    await pool.query('UPDATE messages SET col_name = $1 WHERE id = $2 AND col_name = $3', [toKey, id, fromKey]);
+    io.emit('messageMoved', { id, fromColumn, toColumn });
+  } catch (err) {
+    console.error('Error moving message:', err);
+  }
+});
 
 	socket.on('deleteMessage', async ({ id, column }) => {
-		const colKey = column + 'Col';
-		const colMessages = messages[colKey];
-		const index = colMessages.findIndex(msg => msg.id === id);
-		if (index === -1) return;
+  const colKey = column + 'Col';
+  const colMessages = messages[colKey];
+  const index = colMessages.findIndex(msg => msg.id === id);
+  if (index === -1) return;
 
-		colMessages.splice(index, 1);
+  colMessages.splice(index, 1);
 
-		try {
-			await pool.query('DELETE FROM messages WHERE id = $1 AND col_name = $2', [id, colKey]);
-		} catch (err) {
-			console.error('Error deleting message:', err);
-		}
-	});
+  try {
+    await pool.query('DELETE FROM messages WHERE id = $1 AND col_name = $2', [id, colKey]);
+    io.emit('messageDeleted', { id, column });
+  } catch (err) {
+    console.error('Error deleting message:', err);
+  }
+});
 
 	socket.on('disconnect', () => {
 		console.log('Client disconnected');
