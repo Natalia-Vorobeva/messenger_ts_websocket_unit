@@ -22,7 +22,7 @@ const RightColumn: React.FC<ColumnProps> = ({ searchQuery = '', searchResults = 
   const [filteredFavorites, setFilteredFavorites] = useState<Message[]>([]);
 
   useEffect(() => {
-    if (searchQuery && searchResults.length > 0) {
+    if (searchQuery) {
       setFilteredMessages(searchResults);
       const filteredFavs = searchResults.filter(el => el.liked === true);
       setFilteredFavorites(filteredFavs);

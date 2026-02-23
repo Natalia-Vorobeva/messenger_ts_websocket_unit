@@ -66,7 +66,6 @@ const Card: React.FC<CardProps> = ({
 	}, [menu]);
 
 	const handleFavourites = () => {
-		console.log('📤 [КЛИЕНТ] Отправка toggleLike', { id: data.id, column });
 		socketService.emit('toggleLike', { id: data.id, column });
 	};
 

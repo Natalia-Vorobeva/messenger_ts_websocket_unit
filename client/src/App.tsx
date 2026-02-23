@@ -41,7 +41,17 @@ function App() {
 	const [searchValue, setSearchValue] = useState('');
 	const [activeTab, setActiveTab] = useState('central');
 	const ref = useRef<HTMLDivElement>(null);
-	localStorage.removeItem('tutorialSeen')
+	const [connectionTimeout, setConnectionTimeout] = useState(false);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			if (isLoading) {
+				setConnectionTimeout(true);
+			}
+		}, 7000); 
+
+		return () => clearTimeout(timer);
+	}, []);
 	useEffect(() => {
 		const handleResize = () => setWidth(window.innerWidth);
 		window.addEventListener('resize', handleResize);
@@ -52,6 +62,7 @@ function App() {
 		socketService.connect(WS_URL);
 		socketService.on('initialMessages', (data: MessagesData) => {
 			setIsLoading(false);
+			setConnectionTimeout(false);
 			dispatch(setDataMessages(data));
 		});
 
@@ -134,7 +145,6 @@ function App() {
 	function handleClearSearch() {
 		setSearchValue('');
 	}
-	console.log(isLoading)
 
 	const getColumnCounts = (column: 'left' | 'central' | 'right'): { total: number; favorites: number } => {
 		const columnKey = `${column}Col` as keyof MessagesData;
@@ -162,24 +172,29 @@ function App() {
 			<Toaster
 				position="top-right"
 				toastOptions={{
-    duration: 3000,
-    style: {
-      background: '#363636',
-      color: '#fff',
-      borderRadius: '8px',
-      padding: '12px 16px',
-      boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-      animation: 'slideInToast 0.3s ease',
-    },
-    success: { style: { background: '#4caf50' } },
-    error: { style: { background: '#f44336' } },
-  }}
+					duration: 3000,
+					style: {
+						background: '#363636',
+						color: '#fff',
+						borderRadius: '8px',
+						padding: '12px 16px',
+						boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+						animation: 'slideInToast 0.3s ease',
+					},
+					success: { style: { background: '#4caf50' } },
+					error: { style: { background: '#f44336' } },
+				}}
 
 			/>
 			{isModal && <Popup />}
 			{
-				isLoading ? (
-					<Preloader />
+				!isLoading ? (
+					<Preloader
+						message={connectionTimeout
+							? "Сервер просыпается, подождите ещё немного..."
+							: undefined}
+						showAfter={connectionTimeout ? 0 : 3000}
+					/>
 				) : (
 					<div ref={ref} className="app__content">
 						<div className="app__control-header">

@@ -22,7 +22,7 @@ const CentralColumn: React.FC<ColumnProps> = ({ searchQuery = '', searchResults 
   useEffect(() => {
     let messagesToShow: Message[];
 
-    if (searchQuery && searchResults.length > 0) {
+    if (searchQuery) {
       messagesToShow = searchResults;
     } else {
       messagesToShow = centralCol;
