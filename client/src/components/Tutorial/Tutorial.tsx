@@ -58,7 +58,7 @@ const Tutorial: React.FC<TutorialProps> = ({ isDataLoaded, windowWidth }) => {
 					<li>Нажмите на сердечко в карточке, чтобы добавить сообщение в избранное.</li>
 				</ul>
 
-				<p>Сообщения можно перемещать между колонками с помощью кнопок под карточкой.</p>
+				<p>Сообщения можно перемещать между колонками с помощью кнопок.</p>
 
 				<label className="tutorial-checkbox">
 					<input
