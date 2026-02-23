@@ -1,7 +1,7 @@
 export interface Message {
 	id: number;
   content: string;
-  date: string; // ISO-строка
+  date: string; 
   liked: boolean;
   author: string;
   attachments?: Array<{ url: string }>;
@@ -37,7 +37,7 @@ export interface ColumnProps {
 export interface ServerMessage {
 	id: number;
   content: string;
-  date: string; // исходный формат "YYYY-MM-DD HH:mm:ss"
+  date: string;
   liked: boolean;
   author: string;
 }

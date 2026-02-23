@@ -44,14 +44,16 @@ function App() {
 	const [connectionTimeout, setConnectionTimeout] = useState(false);
 
 	useEffect(() => {
-		const timer = setTimeout(() => {
-			if (isLoading) {
+		if (isLoading) {
+			const timer = setTimeout(() => {
 				setConnectionTimeout(true);
-			}
-		}, 7000); 
+			}, 7000);
+			return () => {
+				clearTimeout(timer);
+			};
+		}
+	}, [isLoading]);
 
-		return () => clearTimeout(timer);
-	}, []);
 	useEffect(() => {
 		const handleResize = () => setWidth(window.innerWidth);
 		window.addEventListener('resize', handleResize);
@@ -69,7 +71,6 @@ function App() {
 		socketService.on('newMessage', (data: { column: string; message: ServerMessage }) => {
 			toast.success(`Новое сообщение в колонке ${data.column}`);
 			const msgWithDate: Message = { ...data.message, date: data.message.date.replace(' ', 'T') + 'Z' };
-			// Пока добавляем в центральную колонку (позже доработаем под колонки)
 			dispatch(setNewMessages({ centralCol: [msgWithDate] }));
 		});
 
@@ -101,7 +102,6 @@ function App() {
 			console.error(err);
 		});
 
-		// Отписка и отключение при размонтировании
 		return () => {
 			socketService.off('initialMessages');
 			socketService.off('newMessage');
@@ -116,7 +116,6 @@ function App() {
 
 	const handleLoadOldMessages = () => {
 		if (idLast) {
-			// Пока загружаем только для центральной колонки
 			socketService.emit('loadOldMessages', { column: 'central', lastId: idLast });
 		}
 	};
@@ -188,7 +187,7 @@ function App() {
 			/>
 			{isModal && <Popup />}
 			{
-				!isLoading ? (
+				isLoading ? (
 					<Preloader
 						message={connectionTimeout
 							? "Сервер просыпается, подождите ещё немного..."

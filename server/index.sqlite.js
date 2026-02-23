@@ -19,7 +19,6 @@ async function startServer() {
 	try {
 		await db.initializeDatabase();
 		messages = await db.loadMessages();
-		console.log('Сообщения загружены из БД');
 
 		server.listen(PORT, () => {
 			console.log(`Сервер запущен на http://localhost:${PORT}`);
@@ -34,7 +33,6 @@ io.on('connection', (socket) => {
 	socket.emit('initialMessages', messages);
 
 	socket.on('loadOldMessages', ({ column, lastId }) => {
-		console.log(`Запрос старых сообщений для колонки ${column} с lastId=${lastId}`);
 		const colMessages = messages[column + 'Col'] || [];
 		const older = colMessages.filter(msg => msg.id < lastId);
 		socket.emit('oldMessages', { column, messages: older });

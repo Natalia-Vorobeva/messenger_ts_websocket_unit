@@ -4,7 +4,6 @@ const path = require('path');
 const dbPath = path.join(__dirname, 'messages.db');
 const db = new sqlite3.Database(dbPath);
 
-// Обёртки для асинхронных операций
 function run(sql, params = []) {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function(err) {
@@ -32,10 +31,7 @@ function get(sql, params = []) {
   });
 }
 
-// Инициализация базы: создание таблицы и начальных данных
 async function initializeDatabase() {
-  console.log('Инициализация базы данных...');
-  // Создание таблицы, если не существует
   await run(`
     CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,9 +42,7 @@ async function initializeDatabase() {
       column TEXT NOT NULL
     )
   `);
-  console.log('Таблица messages готова.');
 
-  // Проверяем, есть ли данные
   const row = await get('SELECT COUNT(*) as count FROM messages');
   if (row.count === 0) {
     const initialMessages = [
@@ -68,12 +62,10 @@ async function initializeDatabase() {
         });
       });
     }
-    stmt.finalize();
-    console.log('Начальные данные добавлены.');
+    stmt.finalize();    
   }
 }
 
-// Загрузка всех сообщений из БД и группировка по колонкам
 async function loadMessages() {
   const rows = await all('SELECT * FROM messages');
   const messages = {
@@ -84,13 +76,11 @@ async function loadMessages() {
   return messages;
 }
 
-// Утилита для удаления поля column из объекта сообщения
 function removeColumnField(msg) {
   const { column, ...rest } = msg;
   return rest;
 }
 
-// Сохранение (вставка или замена) сообщения
 async function saveMessage(message, column) {
   const { id, content, date, liked, author } = message;
   await run(
@@ -99,17 +89,14 @@ async function saveMessage(message, column) {
   );
 }
 
-// Удаление сообщения по id и колонке
 async function deleteMessage(id, column) {
   await run('DELETE FROM messages WHERE id = ? AND column = ?', [id, column]);
 }
 
-// Обновление лайка
 async function updateMessageLike(id, column, liked) {
   await run('UPDATE messages SET liked = ? WHERE id = ? AND column = ?', [liked ? 1 : 0, id, column]);
 }
 
-// Перемещение сообщения между колонками
 async function moveMessage(id, fromColumn, toColumn) {
   await run('UPDATE messages SET column = ? WHERE id = ? AND column = ?', [toColumn, id, fromColumn]);
 }

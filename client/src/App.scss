@@ -245,8 +245,6 @@
   white-space: nowrap;
   padding: 0;
 }
-
-  // ===== Остальные стили остаются без изменений =====
   &__columns {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

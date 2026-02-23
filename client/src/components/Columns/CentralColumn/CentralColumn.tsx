@@ -77,7 +77,7 @@ const CentralColumn: React.FC<ColumnProps> = ({ searchQuery = '', searchResults 
               time={time(item.date)}
               data={item}
               handleDelCard={handleDelCard}
-              onMoveCard={() => {}} // пустая функция для обязательного пропа
+              onMoveCard={() => {}} 
             />
           </Suspense>
         </div>

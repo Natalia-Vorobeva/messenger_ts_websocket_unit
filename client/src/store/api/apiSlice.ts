@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Message, MessagesData, AppState, SelectedCard } from '../../types'; // путь подкорректируй
+import { Message, MessagesData, AppState, SelectedCard } from '../../types'; 
 
 const initialState: AppState = {
 	idLast: null,
@@ -33,7 +33,7 @@ const apiSlice = createSlice({
 		},
 		setDataMessages: (state, action: PayloadAction<MessagesData>) => {
 			state.dataMessages = action.payload;
-			// Вычисляем idLast из всех сообщений (опционально)
+			
 			const allMessages = [
 				...action.payload.leftCol,
 				...action.payload.centralCol,
@@ -46,10 +46,8 @@ const apiSlice = createSlice({
 		},
 		setNewMessages: (state, action: PayloadAction<{ centralCol: Message[] }>) => {
 			const newMessages = action.payload.centralCol;
-			if (newMessages.length > 0) {
-				// Добавляем новые сообщения к существующим
-				state.dataMessages.centralCol = [...state.dataMessages.centralCol, ...newMessages];
-				// Обновляем idLast (берём максимальный id из всех сообщений центральной колонки)
+			if (newMessages.length > 0) {				
+				state.dataMessages.centralCol = [...state.dataMessages.centralCol, ...newMessages];				
 				const allIds = state.dataMessages.centralCol.map(msg => msg.id);
 				state.idLast = Math.max(...allIds);
 			}
@@ -85,7 +83,6 @@ const apiSlice = createSlice({
 				}
 				state.dataMessages.centralCol = filterData(state.dataMessages.centralCol);
 			}
-			// аналогично для 'right' и 'left' (продолжи по образцу)
 		},
 		handleDeleteCard: (state, action: PayloadAction<{ column: string; object: Message }>) => {
 			const payload = action.payload;
@@ -108,19 +105,16 @@ const apiSlice = createSlice({
 		},
 		updateLike: (state, action: PayloadAction<{ id: number; column: string; liked: boolean }>) => {
 			const { id, column, liked } = action.payload;
-			console.log(id, column, liked, 'id, column, liked')
 			const colKey = `${column}Col` as keyof MessagesData;
 			const messages = state.dataMessages[colKey];
 			const index = messages.findIndex(msg => msg.id === id);
 			if (index !== -1) {
-				// Создаём новый массив с обновлённым сообщением
 				const updatedMessage = { ...messages[index], liked };
 				state.dataMessages[colKey] = [
 					...messages.slice(0, index),
 					updatedMessage,
 					...messages.slice(index + 1)
 				];
-				console.log(updatedMessage, 'updatedMessage')
 			}
 		},
 		moveMessageReducer: (state, action: PayloadAction<{ id: number; fromColumn: string; toColumn: string }>) => {
@@ -140,7 +134,6 @@ const apiSlice = createSlice({
 		},
 		deleteMessageReducer: (state, action: PayloadAction<{ id: number; column: string }>) => {
 			const { id, column } = action.payload;
-			console.log(id, column)
 			const colKey = `${column}Col` as keyof MessagesData;
 			const messages = state.dataMessages[colKey];
 			state.dataMessages[colKey] = messages.filter(msg => msg.id !== id);

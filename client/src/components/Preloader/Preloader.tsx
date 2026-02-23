@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import './Preloader.scss';
 
 interface PreloaderProps {
-  message?: string;          // опциональное сообщение
-  showAfter?: number;        // через сколько мс показать сообщение (по умолч. 3000)
+  message?: string;     
+  showAfter?: number;    
 }
 
 const Preloader: React.FC<PreloaderProps> = ({ 

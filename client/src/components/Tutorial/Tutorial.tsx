@@ -10,7 +10,6 @@ const Tutorial: React.FC<TutorialProps> = ({ isDataLoaded, windowWidth }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [dontShowAgain, setDontShowAgain] = useState(false);
 
-	// Условие открытия: данные загружены, ширина >900 и ещё не сохраняли флаг "больше не показывать"
 	useEffect(() => {
 		if (isDataLoaded && !localStorage.getItem('tutorialSeen')) {
 			setIsOpen(true);
@@ -24,7 +23,6 @@ const Tutorial: React.FC<TutorialProps> = ({ isDataLoaded, windowWidth }) => {
 		setIsOpen(false);
 	};
 
-	// Обработчик нажатия Enter
 	const handleKeyDown = useCallback(
 		(e: KeyboardEvent) => {
 			if (e.key === 'Enter' && isOpen) {

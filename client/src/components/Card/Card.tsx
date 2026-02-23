@@ -18,8 +18,7 @@ interface CardProps {
 	column: string;
 	className: string;
 	handleDelCard: (data: Message) => void;
-	// handleFavourites: (data: Message) => void;
-	onMoveCard: (buttonName: string, data: Message, column: string) => void; // предположительно
+	onMoveCard: (buttonName: string, data: Message, column: string) => void; 
 }
 
 const Card: React.FC<CardProps> = ({
@@ -30,7 +29,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
 	const dispatch = useDispatch();
 	const isModal = useSelector(apiSelectors.getIsModal);
-	const choice = useSelector(apiSelectors.getChoice); // тип any
+	const choice = useSelector(apiSelectors.getChoice); 
 	const [isPending, startTransition] = useTransition();
 	const outsideClickRef = useRef<HTMLDivElement>(null);
 	const [dimensions, setDimensions] = useState<boolean>(true);
@@ -70,8 +69,7 @@ const Card: React.FC<CardProps> = ({
 	};
 
 	const handleMove = (buttonName: string) => {
-  // buttonName – это целевая колонка (left, central, right)
-  if (buttonName === column) return; // не перемещаем ту же колонку
+  if (buttonName === column) return; 
   socketService.emit('moveMessage', {
     id: data.id,
     fromColumn: column,
@@ -120,12 +118,6 @@ const Card: React.FC<CardProps> = ({
 		setVisibleContent(false);
 		setDimensions(false);
 	};
-
-	useEffect(() => {
-		if (!isModal && isCardSelected) {
-			// можно добавить логику при закрытии модалки
-		}
-	}, [isModal, isCardSelected]);
 
 	return (
 		<section className={`card ${dimensions ? 'card_mini' : ''}`}>

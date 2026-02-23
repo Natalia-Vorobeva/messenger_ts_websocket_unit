@@ -50,7 +50,6 @@ describe('apiSlice', () => {
 
   it('deleteMessageReducer removes message', () => {
   const state = { ...initialState, dataMessages: sampleMessages };
-  // Используем импортированный экшен вместо строки
   const action = deleteMessageReducer({ id: 2, column: 'central' });
   const newState = reducer(state, action);
   expect(newState.dataMessages.centralCol).toHaveLength(0);

@@ -16,7 +16,6 @@ const Popup: React.FC = () => {
 	const choice = useSelector(apiSelectors.getChoice);
 	const [comments, setComments] = useState<string[]>([]);
 	const [isMounted, setIsMounted] = useState<boolean>(false);
-	const messages = useSelector(apiSelectors.getDataMessages);
 
 	const handleFilterComments = useCallback((currIndex: number) => {
 		setComments(prevState => {
@@ -72,17 +71,6 @@ const Popup: React.FC = () => {
 		}
 	};
 
-	// const handleFavourites = (data: Message) => {
-	// 	if (!choice) return;
-	// 	const column = choice.column as keyof MessagesData;
-	// 	const updatedMessage = { ...data, liked: !data.liked };
-	// 	const updatedColumn = messages[column].map(msg =>
-	// 		msg.id === data.id ? updatedMessage : msg
-	// 	);
-	// 	const newMessages = { ...messages, [column]: updatedColumn };
-	// 	dispatch(handleAddingFavourires(newMessages));
-	// };
-
 	const onSubmit = (e: React.FormEvent<HTMLFormElement>, value: string) => {
 		e.preventDefault();
 		if (value.trim()) {
@@ -108,12 +96,11 @@ const Popup: React.FC = () => {
 					<div ref={wrapperRef} className="popup__wrapper">
 						<Card
 							time={choice.time}
-							// handleFavourites={handleFavourites}
 							handleDelCard={handleDelCard}
 							column={choice.column}
 							data={choice.object}
-							className="" // обязательный пропс
-							onMoveCard={() => { }} // обязательный пропс
+							className=""
+							onMoveCard={() => { }} 
 						/>
 					</div>
 

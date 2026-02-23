@@ -12,15 +12,13 @@ const io = new Server(server, {
 	}
 });
 
-// Подключение к PostgreSQL
 const pool = new Pool({
 	connectionString: process.env.DATABASE_URL,
-	ssl: { rejectUnauthorized: false } // обязательно для Render
+	ssl: { rejectUnauthorized: false } 
 });
 
 let messages = { leftCol: [], centralCol: [], rightCol: [] };
 
-// Инициализация таблицы и загрузка данных
 async function initDB() {
 	await pool.query(`
   CREATE TABLE IF NOT EXISTS messages (
@@ -32,11 +30,9 @@ async function initDB() {
   col_name TEXT NOT NULL
 )
 `);
-	console.log('Table "messages" is ready');
 
 	const countRes = await pool.query('SELECT COUNT(*) FROM messages');
 	if (parseInt(countRes.rows[0].count) === 0) {
-		// вставляем несколько тестовых сообщений
 		const testMessages = [
 			[1, 'Привет из левой колонки!', '2025-02-18 10:00:00', false, 'Левый автор', 'leftCol'],
 			[2, 'Ещё одно левое сообщение', '2025-02-18 10:05:00', true, 'Автор 2', 'leftCol'],
@@ -51,10 +47,8 @@ async function initDB() {
 				msg
 			);
 		}
-		console.log('Test messages inserted');
 	}
 
-	// Загружаем все сообщения
 	const res = await pool.query('SELECT * FROM messages');
 	const rows = res.rows;
 	messages = {
@@ -62,7 +56,6 @@ async function initDB() {
 		centralCol: rows.filter(r => r.col_name === 'centralCol').map(removeColumnField),
 		rightCol: rows.filter(r => r.col_name === 'rightCol').map(removeColumnField)
 	};
-	console.log('Messages loaded from DB');
 }
 
 function removeColumnField(msg) {
@@ -76,7 +69,6 @@ io.on('connection', (socket) => {
 	socket.emit('initialMessages', messages);
 
 	socket.on('loadOldMessages', async ({ column, lastId }) => {
-		console.log(`loadOldMessages: column=${column}, lastId=${lastId}`);
 		const colKey = column + 'Col';
 		const colMessages = messages[colKey] || [];
 		const older = colMessages.filter(msg => msg.id < lastId);
