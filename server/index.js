@@ -34,6 +34,26 @@ async function initDB() {
 `);
 	console.log('Table "messages" is ready');
 
+	const countRes = await pool.query('SELECT COUNT(*) FROM messages');
+if (parseInt(countRes.rows[0].count) === 0) {
+  // вставляем несколько тестовых сообщений
+  const testMessages = [
+    [1, 'Привет из левой колонки!', '2025-02-18 10:00:00', false, 'Левый автор', 'leftCol'],
+    [2, 'Ещё одно левое сообщение', '2025-02-18 10:05:00', true, 'Автор 2', 'leftCol'],
+    [3, 'Центральное сообщение 1', '2025-02-18 10:10:00', false, 'Центр', 'centralCol'],
+    [4, 'Центральное сообщение 2', '2025-02-18 10:15:00', true, 'Пользователь', 'centralCol'],
+    [5, 'Правое сообщение 1', '2025-02-18 10:20:00', false, 'Правый', 'rightCol'],
+    [6, 'Правое сообщение 2', '2025-02-18 10:25:00', true, 'Ещё автор', 'rightCol']
+  ];
+  for (const msg of testMessages) {
+    await pool.query(
+      'INSERT INTO messages (id, content, date, liked, author, col_name) VALUES ($1, $2, $3, $4, $5, $6)',
+      msg
+    );
+  }
+  console.log('Test messages inserted');
+}
+
 	// Загружаем все сообщения
 	const res = await pool.query('SELECT * FROM messages');
 	const rows = res.rows;

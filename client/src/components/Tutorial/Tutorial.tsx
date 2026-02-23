@@ -12,7 +12,7 @@ const Tutorial: React.FC<TutorialProps> = ({ isDataLoaded, windowWidth }) => {
 
   // Условие открытия: данные загружены, ширина >900 и ещё не сохраняли флаг "больше не показывать"
   useEffect(() => {
-    if (isDataLoaded && windowWidth > 900 && !localStorage.getItem('tutorialSeen')) {
+    if (isDataLoaded && !localStorage.getItem('tutorialSeen')) {
       setIsOpen(true);
     }
   }, [isDataLoaded, windowWidth]);
