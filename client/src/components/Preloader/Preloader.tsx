@@ -7,7 +7,7 @@ interface PreloaderProps {
 }
 
 const Preloader: React.FC<PreloaderProps> = ({ 
-  message = 'Кажется что-то пошло не так...!', 
+  message = 'Нужно немного времени, чтобы сервер проснулся...', 
   showAfter = 3000 
 }) => {
   const [showMessage, setShowMessage] = useState(false);
